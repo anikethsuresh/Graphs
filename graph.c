@@ -1,9 +1,12 @@
 #include "graph.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+void DFS(Graph *graph,int v1, int v2, int* arrOfVertices);
 
 Graph *graph_initialize(){
-	Graph*  newGraph = malloc(sizeof(Graph*));
+	Graph*  newGraph = malloc(sizeof(Graph));
 	if(newGraph == NULL){
 		return NULL;
 	}
@@ -28,7 +31,7 @@ int graph_add_vertex(Graph *graph, int v1){
 		return -1;
 	}
 	if(graph_contains_vertex(graph,v1) == 1){
-		return -1; // Already exists
+		return 0; // Already exists
 	}
 	if(v1 >= MAX_VERTICES || v1 < 0){ // TO-DO - Write helper function for this
 		return -1; // Bad Vertex
@@ -104,6 +107,9 @@ int graph_add_edge(Graph *graph, int v1, int v2, int wt){
 	if(graph_contains_vertex(graph, v1) == 0 || graph_contains_vertex(graph, v2) == 0){
 		return -1;
 	}
+	if(wt<=0){
+		return -1;
+	}
 	if(graph->adj_matrix[v1][v1] == -1){
 		graph->adj_matrix[v1][v1] = 0;
 	}
@@ -122,7 +128,7 @@ int graph_contains_edge(Graph *graph, int v1, int v2){
 	if(graph_contains_vertex(graph, v1) == 0 || graph_contains_vertex(graph, v2) == 0){
 		return 0;
 	}
-	if(graph->adj_matrix[v1][v2] == 0){
+	if(graph->adj_matrix[v1][v2] == 0 || graph->adj_matrix[v1][v2] == -1){
 		return 0;
 	}
 	else{
@@ -145,34 +151,43 @@ int graph_remove_edge(Graph *graph, int v1, int v2){
 	}
 	// Remove edge
 	graph->adj_matrix[v1][v2] = 0;
-
+	int v1Change = 1;
+	int v2Change = 1;
 	// Possible that both vertice exists without any edges
 	for (int i = 0; i < MAX_VERTICES; i++)
 	{
 		// For v1
 		// Check if there are edges FROM v1 TO other vertices
 		if(graph->adj_matrix[v1][i] != 0){
-			return 0;
+			v1Change = 0;
+			break;
 		}
 		// Check if there are edges TO v1 FROM other vertices
 		if(graph->adj_matrix[i][v1] != 0){
-			return 0;
+			v1Change = 0;
+			break;
 		}
 	}
-	graph->adj_matrix[v1][v1] = -1;
+	if(v1Change == 1){
+		graph->adj_matrix[v1][v1] = -1;
+	}
 	for (int i = 0; i < MAX_VERTICES; i++)
 	{
 	// For v2
 		// Check if there are edges FROM v2 TO other vertices
 		if(graph->adj_matrix[v2][i] != 0){
-			return 0;
+			v2Change = 0;
+			break;
 		}
 		// Check if there are edges TO v2 FROM other vertices
 		if(graph->adj_matrix[i][v2] != 0){
-			return 0;
+			v2Change = 0;
+			break;
 		}
 	}
-	graph->adj_matrix[v2][v2] = -1;
+	if(v2Change == 1){
+		graph->adj_matrix[v2][v2] = -1;
+	}
 	return 0;
 
 }
@@ -231,7 +246,7 @@ int graph_total_weight(Graph *graph){
 	int totalWeight = 0;
 	for (int i = 0; i < MAX_VERTICES; i++)
 	{
-		for (int j = 0; i < MAX_VERTICES; j++)
+		for (int j = 0; j < MAX_VERTICES; j++)
 		{
 			if(graph->adj_matrix[i][j] == -1){
 				continue;
@@ -294,6 +309,9 @@ int graph_is_neighbor(Graph *graph, int v1, int v2){
 		return 0;
 	}
 	if(v1 == v2){
+		if(graph->adj_matrix[v1][v2] == -1){
+			return 0;
+		}
 		if(graph->adj_matrix[v1][v2] != 0){
 			return 1;
 		}
@@ -315,19 +333,22 @@ int *graph_get_predecessors(Graph *graph, int v1){
 	}
 	if(graph->adj_matrix[v1][v1] == -1){
 		//  Vertex only exists - No edges To and From
-		return 0;
+		return NULL;
 	}
-	int* predecesors = malloc(sizeof(int) * MAX_VERTICES);
+	int* predecessors = malloc(sizeof(int) * MAX_VERTICES);
+	if(predecessors == NULL){
+		return NULL;
+	}
 	int index = 0;
 	for (int i = 0; i < MAX_VERTICES; i++)
 	{
 		if(graph->adj_matrix[i][v1] != 0){
-			predecesors[index] = i;
+			predecessors[index] = i;
 			index ++;
 		}
 	}
-	predecesors[index] = -1;
-	return predecesors;
+	predecessors[index] = -1;
+	return predecessors;
 	
 }
 int *graph_get_successors(Graph *graph, int v1){
@@ -339,9 +360,12 @@ int *graph_get_successors(Graph *graph, int v1){
 	}
 	if(graph->adj_matrix[v1][v1] == -1){
 		//  Vertex only exists - No edges To and From
-		return 0;
+		return NULL;
 	}
-	int* successor = malloc(sizeof(int) * MAX_VERTICES);
+	int* successor = (int*) malloc(sizeof(int) * MAX_VERTICES);
+	if(successor == NULL){
+		return NULL;
+	}
 	int index = 0;
 	for (int i = 0; i < MAX_VERTICES; i++)
 	{
@@ -356,7 +380,47 @@ int *graph_get_successors(Graph *graph, int v1){
 }
 
 // Graph Path Operations
-int graph_has_path(Graph *graph, int v1, int v2);
+int graph_has_path(Graph *graph, int v1, int v2){
+	if(graph == NULL){
+		return 0;
+	}
+	if(graph_contains_vertex(graph, v1) == 0 || graph_contains_vertex(graph, v2) == 0){
+		return 0;
+	}
+	if(v1 == v2){
+		if(graph->adj_matrix[v1][v2] == -1 || graph->adj_matrix[v1][v2] == 0){
+			return 0;
+		}
+		else{
+			return 1;
+		}
+	}
+	int arrOfVertices[MAX_VERTICES] = {0}; // Remove malloc 
+	// for (int i = 0; i < MAX_VERTICES; i++)
+	// {
+	// 	arrOfVertices[i] = 0;
+	// }
+	DFS(graph,v1,v2, arrOfVertices);
+	if(arrOfVertices[v2] == 1){
+		return 1;
+	}
+	else{
+		return 0;
+	}
+}
+
+void DFS(Graph *graph,int v1, int v2, int* arrOfVertices){
+	arrOfVertices[v1] = 1;
+	for (int i = 0; i < MAX_VERTICES; i++)
+	{
+		if(v1 == i){
+			continue;
+		}
+		if(graph->adj_matrix[v1][i] != 0 && graph->adj_matrix[v1][i] != -1){
+			DFS(graph, i, v2, arrOfVertices);
+		}
+	}
+}
 
 // Input/Output Operations
 void graph_print(Graph *graph){
@@ -384,28 +448,139 @@ void graph_print(Graph *graph){
 	}
 	printf("\n");
 }
-void graph_output_dot(Graph *graph, char *filename);
+
+void graph_output_dot(Graph *graph, char *filename){
+	if(graph == NULL){
+		return;
+	}
+	FILE* fp = fopen(filename, "w");
+	if(fp == NULL){
+		return;
+	}
+	char* start = "digraph {";
+	char* end = "}";
+	char* semicolon = ";";
+
+	fprintf(fp, "%s\n", start);
+
+	for (int i = 0; i < MAX_VERTICES; i++)
+	{
+		for (int j = 0; j < MAX_VERTICES; j++)
+		{
+			if(i==j){
+				if(graph->adj_matrix[i][j] == -1){
+					fprintf(fp, "%d%s\n",i, semicolon);
+					continue;
+				}
+				else if(graph->adj_matrix[i][j] != 0){
+					fprintf(fp, "%d -> %d [label = %d]%s\n", i, j,graph->adj_matrix[i][j], semicolon);
+					continue;
+				}
+			}
+			else{
+				if(graph->adj_matrix[i][j] != 0){
+					fprintf(fp, "%d -> %d [label = %d]%s\n", i, j,graph->adj_matrix[i][j], semicolon);
+					continue;
+				}
+			}
+		}
+	}
+
+	fprintf(fp, "%s\n", end);
+	fclose(fp);
+	return;
+}
+
 
 int graph_load_file(Graph *graph, char *filename){
-	printf("GOT HERE\n");
 	if(graph == NULL){
 		return -1;
 	}
-	printf("GOT HERE\n");
-	printf("%s\n", filename);
 	FILE* fp = fopen(filename, "r");
-	printf("GOT HERE\n");
 	if(fp == NULL){
 		return -1;
 	}
-	printf("GOT HERE\n");
-	char buffer[FILE_ENTRY_MAX_LEN];
+	for (int i = 0; i < MAX_VERTICES; i++)
+	{
+		for (int j = 0; j < MAX_VERTICES; j++)
+		{
+			graph->adj_matrix[i][j] = 0;
+		}
+	}
+	char line[FILE_ENTRY_MAX_LEN];
+	char* vertex1Token;
+	char* vertex2Token;
+	char* edgeToken;
+	int vertex1;
+	int vertex2;
+	int edge;
 	while(feof(fp) == 0){
-		fgets(buffer, FILE_ENTRY_MAX_LEN, fp);
-		printf("%s\n",buffer );
+		fgets(line, FILE_ENTRY_MAX_LEN, fp);
+		printf("%s\n",line);
+		vertex1Token = strtok(line, ",");
+		vertex2Token=strtok(NULL, ",");
+		if(vertex2Token == NULL){
+			// Only vertex
+			printf("Only vertex-> %s\n",vertex1Token);
+			sscanf(vertex1Token, "%d", &vertex1);
+			if(graph_contains_vertex(graph, vertex1) == 0){
+				graph_add_vertex(graph, vertex1);
+			}
+		}
+		else{
+			edgeToken = strtok(NULL, ",");
+			printf("Vertex 1 -> %s\n",vertex1Token);
+			printf("Vertex 2 -> %s\n",vertex2Token);
+			printf("Edge -> %s\n",edgeToken);
+			sscanf(vertex1Token, "%d", &vertex1);
+			sscanf(vertex2Token, "%d", &vertex2);
+			sscanf(edgeToken, "%d", &edge);
+			if(graph_contains_vertex(graph, vertex1) == 0){
+				graph_add_vertex(graph, vertex1);
+			}
+			if(graph_contains_vertex(graph, vertex2) == 0){
+				graph_add_vertex(graph, vertex2);
+			}
+			graph_add_edge(graph, vertex1, vertex2, edge);
+		}
+
 	}
 	fclose(fp);
 	return 0;
 }
 
-int graph_save_file(Graph *graph, char *filename);
+int graph_save_file(Graph *graph, char *filename){
+	if(graph == NULL){
+		return -1;
+	}
+	FILE* fp = fopen(filename, "w");
+	if(fp == NULL){
+		return -1;
+	}
+
+	for (int i = 0; i < MAX_VERTICES; i++)
+	{
+		for (int j = 0; j < MAX_VERTICES; j++)
+		{
+			if(i==j){
+				if(graph->adj_matrix[i][j] == -1){
+					fprintf(fp, "%d\n",i);
+					continue;
+				}
+				else if(graph->adj_matrix[i][j] != 0){
+					fprintf(fp, "%d,%d,%d\n", i, j,graph->adj_matrix[i][j]);
+					continue;
+				}
+			}
+			else{
+				if(graph->adj_matrix[i][j] != 0){
+					fprintf(fp, "%d,%d,%d\n", i, j,graph->adj_matrix[i][j]);
+					continue;
+				}
+			}
+		}
+	}
+
+	fclose(fp);
+	return 0;
+}

@@ -156,38 +156,49 @@ int main(int argc, char const *argv[])
 					printFailure();
 					break;
 				}
-				for (int i = 0; i < MAX_VERTICES || predecessor[i]!=-1; i++)
+				for (int i = 0; predecessor[i] != -1; i++)
 				{
-					printf("Number of Predecessors = %d",predecessor[i] );
+					printf("Predecessors = %d\n", predecessor[i] );
 				}
+				free(predecessor);
+				predecessor = NULL;
 				break;
 			case 14:
 				scanf("%d", &v1);
 				// v1 = strtol(strtok(NULL, " "), NULL, 10);
-				successor = graph_get_predecessors(graph, v1);
+				successor = graph_get_successors(graph, v1);
 				if(successor == NULL){
 					printFailure();
 					break;
 				}
-				for (int i = 0; i < MAX_VERTICES || successor[i]!=-1; i++)
+				for (int i = 0; i < MAX_VERTICES && (successor[i])!=-1; i++)
 				{
-					printf("Number of Successors = %d",successor[i] );
+					printf("Successors = %d\n",(successor[i]) );
 				}
+				free(successor);
+				successor = NULL;
 				break;
 			case 15:
-				// Not done
+				scanf("%d %d", &v1, &v2);
+				returnValue = graph_has_path(graph, v1, v2);
+				if(returnValue == 1){
+					printSuccess();
+				}
+				else{
+					printFailure();
+				}
 				break;
 			case 16:
 				graph_print(graph);
 				break;
 			case 17:
-				// Not done
+				graph_output_dot(graph, "graphviz.txt");
 				break;
 			case 18:
 				graph_load_file(graph, "t.txt");
 				break;
 			case 19:
-				// Not done
+				graph_save_file(graph,"save.txt");
 				break;
 			default:
 				// Not done
@@ -197,3 +208,13 @@ int main(int argc, char const *argv[])
 	}
     return 0;
 }
+
+
+// Insert -> 1 0 1 1 1 2 1 3 1 4 1 5
+// Add edge -> 
+// 4 0 0 5 4 3 3 5 4 4 4 5 4 0 1 5 4 0 2 5 4 2 1 5 4 1 4 5 4 3 4 5 4 1 3 5
+// Remove edges -> 
+// 1 0 1 1 1 2 1 3 1 4 1 5 4 0 0 5 4 3 3 5 4 4 4 5 4 0 1 5 4 0 2 5 4 2 1 5 4 1 4 5 4 3 4 5 4 1 3 5
+
+//Type 4
+// 1 0 1 2 1 3 1 4 1 5 4 0 2 5 4 2 0 5 4 2 4 5 4 4 2 5 4 2 5 5 4 5 3 5
