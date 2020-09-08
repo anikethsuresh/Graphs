@@ -34,6 +34,7 @@ int main(int argc, char const *argv[])
 	19. Save File | filename\n"; 
 	
 	int input = 0;
+	int i = 0;
 	Graph* graph = graph_initialize();
 	while(input != -1){
 		printf("%s\n", menu);
@@ -156,7 +157,7 @@ int main(int argc, char const *argv[])
 					printFailure();
 					break;
 				}
-				for (int i = 0; predecessor[i] != -1; i++)
+				for (i = 0; predecessor[i] != -1; i++)
 				{
 					printf("Predecessors = %d\n", predecessor[i] );
 				}
@@ -171,7 +172,7 @@ int main(int argc, char const *argv[])
 					printFailure();
 					break;
 				}
-				for (int i = 0; i < MAX_VERTICES && (successor[i])!=-1; i++)
+				for (i = 0; i < MAX_VERTICES && (successor[i])!=-1; i++)
 				{
 					printf("Successors = %d\n",(successor[i]) );
 				}

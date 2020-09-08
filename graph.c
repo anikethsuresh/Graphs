@@ -11,14 +11,16 @@ Graph *graph_initialize(){
 		return NULL;
 	}
 	newGraph->max_vertex = 0;
-	for (int i = 0; i < MAX_VERTICES; i++)
+	int i = 0, j = 0;
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
-		for (int j = 0; j < MAX_VERTICES; j++)
+		for (j = 0; j < MAX_VERTICES; j++)
 		{
+			// Inititlize to 0
 			newGraph->adj_matrix[i][j] = 0;
 		}
 	}
-	for (int i = 0; i < MAX_VERTICES; i++)
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
 		newGraph->visited[i] = 0;
 	}
@@ -52,8 +54,8 @@ int graph_contains_vertex(Graph *graph, int v1){
 	if(graph->adj_matrix[v1][v1] == -1){
 		return 1;
 	}
-	
-	for (int i = 0; i < MAX_VERTICES; i++)
+	int i = 0;
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
 		// Check if there are edges FROM v1 TO other vertices
 		if(graph->adj_matrix[v1][i] != 0){
@@ -84,7 +86,8 @@ int graph_remove_vertex(Graph *graph, int v1){
 		graph->adj_matrix[v1][v1] = 0;
 	}
 	// Remove all edges FROM and TO V1
-	for (int i = 0; i < MAX_VERTICES; i++)
+	int i = 0;
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
 		// Delete edges FROM v1 TO other vertices
 		graph->adj_matrix[v1][i] = 0;
@@ -151,10 +154,12 @@ int graph_remove_edge(Graph *graph, int v1, int v2){
 	}
 	// Remove edge
 	graph->adj_matrix[v1][v2] = 0;
+	// Flags
 	int v1Change = 1;
 	int v2Change = 1;
 	// Possible that both vertice exists without any edges
-	for (int i = 0; i < MAX_VERTICES; i++)
+	int i = 0;
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
 		// For v1
 		// Check if there are edges FROM v1 TO other vertices
@@ -171,7 +176,7 @@ int graph_remove_edge(Graph *graph, int v1, int v2){
 	if(v1Change == 1){
 		graph->adj_matrix[v1][v1] = -1;
 	}
-	for (int i = 0; i < MAX_VERTICES; i++)
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
 	// For v2
 		// Check if there are edges FROM v2 TO other vertices
@@ -199,11 +204,12 @@ int graph_num_vertices(Graph *graph){
 		return -1;
 	}
 	int numOfVertices = 0;
-	for (int i = 0; i < MAX_VERTICES; i++)
+	int i = 0, j = 0;
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
 		int numRow = 0;
 		int numColumn = 0;
-		for (int j = 0; j < MAX_VERTICES; j++)
+		for (j = 0; j < MAX_VERTICES; j++)
 		{
 			if(graph->adj_matrix[i][j] != 0){
 				numRow +=1;
@@ -224,9 +230,10 @@ int graph_num_edges(Graph *graph){
 		return -1;
 	}
 	int numOfEdges = 0;
-	for (int i = 0; i < MAX_VERTICES; i++)
+	int i = 0, j = 0;
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
-		for (int j = 0; j < MAX_VERTICES; j++)
+		for ( j = 0; j < MAX_VERTICES; j++)
 		{
 			if(graph->adj_matrix[i][j] == -1){
 				continue;
@@ -244,9 +251,10 @@ int graph_total_weight(Graph *graph){
 		return -1;
 	}
 	int totalWeight = 0;
-	for (int i = 0; i < MAX_VERTICES; i++)
+	int i = 0, j = 0;
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
-		for (int j = 0; j < MAX_VERTICES; j++)
+		for ( j = 0; j < MAX_VERTICES; j++)
 		{
 			if(graph->adj_matrix[i][j] == -1){
 				continue;
@@ -272,7 +280,8 @@ int graph_get_degree(Graph *graph, int v1){
 		return 0;
 	}
 	int degree = 0;
-	for (int i = 0; i < MAX_VERTICES; i++)
+	int i = 0;
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
 		if(graph->adj_matrix[v1][i] != 0){
 			degree +=1;
@@ -281,9 +290,6 @@ int graph_get_degree(Graph *graph, int v1){
 			degree +=1;
 		}
 	}
-	// if(graph->adj_matrix[v1][v1] != 0){
-	// 	degree -=1;
-	// }
 	return degree;
 }
 
@@ -340,7 +346,8 @@ int *graph_get_predecessors(Graph *graph, int v1){
 		return NULL;
 	}
 	int index = 0;
-	for (int i = 0; i < MAX_VERTICES; i++)
+	int i = 0;
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
 		if(graph->adj_matrix[i][v1] != 0){
 			predecessors[index] = i;
@@ -367,7 +374,8 @@ int *graph_get_successors(Graph *graph, int v1){
 		return NULL;
 	}
 	int index = 0;
-	for (int i = 0; i < MAX_VERTICES; i++)
+	int i = 0;
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
 		if(graph->adj_matrix[v1][i] != 0){
 			successor[index] = i;
@@ -395,11 +403,7 @@ int graph_has_path(Graph *graph, int v1, int v2){
 			return 1;
 		}
 	}
-	int arrOfVertices[MAX_VERTICES] = {0}; // Remove malloc 
-	// for (int i = 0; i < MAX_VERTICES; i++)
-	// {
-	// 	arrOfVertices[i] = 0;
-	// }
+	int arrOfVertices[MAX_VERTICES] = {0}; 
 	DFS(graph,v1,v2, arrOfVertices);
 	if(arrOfVertices[v2] == 1){
 		return 1;
@@ -411,7 +415,8 @@ int graph_has_path(Graph *graph, int v1, int v2){
 
 void DFS(Graph *graph,int v1, int v2, int* arrOfVertices){
 	arrOfVertices[v1] = 1;
-	for (int i = 0; i < MAX_VERTICES; i++)
+	int i = 0;
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
 		if(v1 == i){
 			continue;
@@ -428,19 +433,20 @@ void graph_print(Graph *graph){
 		return;
 	}
 	char* filler = "-";
-	for (int i = 0; i < MAX_VERTICES; i++)
+	int i = 0, j = 0;
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
 		printf("%3d", i);
 	}
 	printf("\n");
-	for (int i = 0; i < MAX_VERTICES; i++)
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
 		printf("%3s",filler );
 	}
 	printf("\n");
-	for (int i = 0; i < MAX_VERTICES; i++)
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
-		for (int j = 0; j < MAX_VERTICES; j++)
+		for (j = 0; j < MAX_VERTICES; j++)
 		{
 			printf("%3d", graph->adj_matrix[i][j]);
 		}
@@ -453,6 +459,9 @@ void graph_output_dot(Graph *graph, char *filename){
 	if(graph == NULL){
 		return;
 	}
+	if(filename == NULL){
+		return;
+	}
 	FILE* fp = fopen(filename, "w");
 	if(fp == NULL){
 		return;
@@ -462,10 +471,10 @@ void graph_output_dot(Graph *graph, char *filename){
 	char* semicolon = ";";
 
 	fprintf(fp, "%s\n", start);
-
-	for (int i = 0; i < MAX_VERTICES; i++)
+	int i = 0, j = 0;
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
-		for (int j = 0; j < MAX_VERTICES; j++)
+		for (j = 0; j < MAX_VERTICES; j++)
 		{
 			if(i==j){
 				if(graph->adj_matrix[i][j] == -1){
@@ -496,13 +505,17 @@ int graph_load_file(Graph *graph, char *filename){
 	if(graph == NULL){
 		return -1;
 	}
+	if(filename == NULL){
+		return -1;
+	}
 	FILE* fp = fopen(filename, "r");
 	if(fp == NULL){
 		return -1;
 	}
-	for (int i = 0; i < MAX_VERTICES; i++)
+	int i = 0, j = 0;
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
-		for (int j = 0; j < MAX_VERTICES; j++)
+		for (j = 0; j < MAX_VERTICES; j++)
 		{
 			graph->adj_matrix[i][j] = 0;
 		}
@@ -516,12 +529,10 @@ int graph_load_file(Graph *graph, char *filename){
 	int edge;
 	while(feof(fp) == 0){
 		fgets(line, FILE_ENTRY_MAX_LEN, fp);
-		printf("%s\n",line);
 		vertex1Token = strtok(line, ",");
 		vertex2Token=strtok(NULL, ",");
 		if(vertex2Token == NULL){
 			// Only vertex
-			printf("Only vertex-> %s\n",vertex1Token);
 			sscanf(vertex1Token, "%d", &vertex1);
 			if(graph_contains_vertex(graph, vertex1) == 0){
 				graph_add_vertex(graph, vertex1);
@@ -529,9 +540,6 @@ int graph_load_file(Graph *graph, char *filename){
 		}
 		else{
 			edgeToken = strtok(NULL, ",");
-			printf("Vertex 1 -> %s\n",vertex1Token);
-			printf("Vertex 2 -> %s\n",vertex2Token);
-			printf("Edge -> %s\n",edgeToken);
 			sscanf(vertex1Token, "%d", &vertex1);
 			sscanf(vertex2Token, "%d", &vertex2);
 			sscanf(edgeToken, "%d", &edge);
@@ -553,14 +561,17 @@ int graph_save_file(Graph *graph, char *filename){
 	if(graph == NULL){
 		return -1;
 	}
+	if(filename == NULL){
+		return -1;
+	}
 	FILE* fp = fopen(filename, "w");
 	if(fp == NULL){
 		return -1;
 	}
-
-	for (int i = 0; i < MAX_VERTICES; i++)
+	int i = 0, j = 0;
+	for (i = 0; i < MAX_VERTICES; i++)
 	{
-		for (int j = 0; j < MAX_VERTICES; j++)
+		for (j = 0; j < MAX_VERTICES; j++)
 		{
 			if(i==j){
 				if(graph->adj_matrix[i][j] == -1){
